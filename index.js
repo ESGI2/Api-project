@@ -10,6 +10,10 @@ const db = connection.connect((err) => {
   console.log('Connecté à la base de données MySQL!');
 });
 
+// Importation des routes
+const userRoute = require("./backend/routes/user.route");
+app.use("/user", userRoute);
+
 // Lancement du serveur
 app.listen(8000, () => {
   console.log('Le serveur a bien démarré au port 8000');
