@@ -14,6 +14,9 @@ const db = connection.connect((err) => {
 const userRoute = require("./backend/routes/user.route");
 app.use("/user", userRoute);
 
+const appartementRoute = require("./backend/routes/appartement.route");
+app.use("/appartement", appartementRoute);
+
 // Lancement du serveur
 app.listen(8000, () => {
   console.log('Le serveur a bien démarré au port 8000');

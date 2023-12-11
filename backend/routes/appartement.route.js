@@ -10,6 +10,5 @@ const {
 const router = express.Router();
 
 router.get('/', getAllAppartement);
-router.get('/:id', getAppartementById);
 
 module.exports = router;
