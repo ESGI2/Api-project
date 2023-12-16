@@ -13,5 +13,6 @@ router.get('/', getAllAppartement);
 router.get('/:id', getAppartementById);
 router.post('/', createAppartement);
 router.put('/:id', updateAppartement);
+router.delete('/:id', deleteAppartement);
 
 module.exports = router;

@@ -18,7 +18,8 @@ class AppartementService {
           id: Number(id)
         }
       });
-      return appartement;
+      if (appartement) return appartement;
+      else return null;
       } catch (error) {
         throw error;
       }
@@ -59,6 +60,27 @@ class AppartementService {
           }
         });
         return appartement;
+      }
+      return null;
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  static async deleteAppartement(id) {
+    try {
+      const appartement = await Appartement.findOne({
+        where: {
+          id: Number(id)
+        }
+      });
+      if (appartement) {
+        const deletedAppartement = await Appartement.destroy({
+          where: {
+            id: Number(id)
+          }
+        });
+        return deletedAppartement;
       }
       return null;
     } catch (error) {
