@@ -21,7 +21,7 @@ function loginUser(req, res) {
       // Utiliser le jeton existant de l'utilisateur
       const existingToken = user.token;
 
-      console.log(`Utilisateur ${user.prenon} connecté avec succès.`);
+      console.log(`Utilisateur ${user.prenom} connecté avec succès.`);
 
       return res.status(200).json({ message: 'Connexion réussie' });
     } else {

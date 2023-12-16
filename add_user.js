@@ -4,32 +4,46 @@ const secretKey = process.env.SECRET_KEY;
 const db = require('./backend/config/db');
 
 function addUser(req, res) {
-  const { nom, prenon, mail, password } = req.query;
+  const { nom, prenom, mail, password } = req.query;
 
-  // Hasher le mot de passe en utilisant sha256
-  const hashedPassword = crypto.createHash('sha256').update(password).digest('hex');
-
-  // Créer et signer un token JWT avec des informations minimales (par exemple, le rôle de l'utilisateur)
-  const role = "client";
-  const token = jwt.sign({ sub: nom, role: role }, secretKey);
-
-  const query = 'INSERT INTO user (nom, prenon, mail, password, role, token) VALUES (?, ?, ?, ?, ?, ?)';
-  db.query(query, [nom, prenon, mail, hashedPassword, role, token], (err, results) => {
-    if (err) {
-      console.error(err);
-      return res.status(500).send('Erreur lors de la création du user.');
+  // Vérifier si l'e-mail est déjà utilisé
+  const checkEmailQuery = 'SELECT * FROM user WHERE mail = ?';
+  db.query(checkEmailQuery, [mail], (checkErr, checkResults) => {
+    if (checkErr) {
+      console.error(checkErr);
+      return res.status(500).send("Erreur lors de la vérification de l'e-mail.");
+    }
+  
+    if (checkResults.length > 0) {
+      return res.status(400).send("L'e-mail est déjà utilisé.");
     }
 
-    // Stocker le token généré dans la base de données
-    const userId = results.insertId;
-    const updateTokenQuery = 'UPDATE user SET token = ? WHERE id = ?';
-    db.query(updateTokenQuery, [token, userId], (updateErr) => {
-      if (updateErr) {
-        console.error(updateErr);
-        return res.status(500).send('Erreur lors de la mise à jour du token.');
+    // L'e-mail n'est pas déjà utilisé, continuer avec l'ajout de l'utilisateur
+    const hashedPassword = crypto.createHash('sha256').update(password).digest('hex');
+    const role = "client";
+    const token = jwt.sign({ sub: nom, role: role }, secretKey);
+
+    const insertUserQuery = 'INSERT INTO user (nom, prenom, mail, password, role, token) VALUES (?, ?, ?, ?, ?, ?)';
+    db.query(insertUserQuery, [nom, prenom, mail, hashedPassword, role, token], (insertErr, results) => {
+      if (insertErr) {
+        console.error('Erreur lors de l\'insertion de l\'utilisateur:', insertErr);
+        return res.status(500).send('Erreur lors de la création du user.');
       }
 
-      res.status(201).send('Utilisateur créé avec succès.');
+      console.log('Utilisateur inséré avec succès:', results);
+
+      const userId = results.insertId;
+      const updateTokenQuery = 'UPDATE user SET token = ? WHERE id = ?';
+      db.query(updateTokenQuery, [token, userId], (updateErr) => {
+        if (updateErr) {
+          console.error('Erreur lors de la mise à jour du token:', updateErr);
+          return res.status(500).send('Erreur lors de la mise à jour du token.');
+        }
+
+        console.log('Token mis à jour avec succès.');
+
+        res.status(201).send('Utilisateur créé avec succès.');
+      });
     });
   });
 }
