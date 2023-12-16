@@ -2,12 +2,17 @@
 const express = require('express');
 const app = express();
 const dotenv = require('dotenv').config();
-const connection = require('./backend/config/db');
+const sequelize = require('./backend/config/db');
 
 // Connexion à la base de données
-const db = connection.connect((err) => {
-  if (err) throw err;
-  console.log('Connecté à la base de données MySQL!');
+sequelize.sync().then(() => {
+  console.log('La connexion à la base de données a été établie avec succès.');
+  const port = 3000;
+  app.listen(port, () => {
+    console.log(`Le serveur est en cours d'exécution sur le port ${port}`);
+  });
+}).catch((error) => {
+  console.error('Erreur lors de la connexion à la base de données:', error);
 });
 
 // Importation des routes
@@ -17,12 +22,7 @@ app.use("/user", userRoute);
 const appartementRoute = require("./backend/routes/appartement.route");
 app.use("/appartement", appartementRoute);
 
-// Lancement du serveur
-app.listen(8000, () => {
-  console.log('Le serveur a bien démarré au port 8000');
-});
-
 // Middleware pour parser les requêtes POST
-var bodyParser = require('body-parser')
+var bodyParser = require('body-parser');
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
