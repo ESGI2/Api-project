@@ -23,6 +23,22 @@ class AppartementService {
         throw error;
       }
     }
+
+  static async createAppartement(superficie, capacite, adresse, prix_nuit) {
+    const disponibilite = true;
+    try {
+      const appartement = await Appartement.create({
+        superficie,
+        capacite,
+        adresse,
+        disponibilite,
+        prix_nuit
+      });
+      return appartement;
+    } catch (error) {
+      throw error;
+    }
+  }
 }
 
 module.exports = AppartementService;

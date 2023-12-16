@@ -29,3 +29,15 @@ exports.getAppartementById = async (req, res) => {
         res.status(500).json({ message: 'Internal Server Error' });
     }
 };
+
+exports.createAppartement = async (req, res) => {
+    try {
+        console.log(req.body);
+        const { superficie, capacite, adresse, prix_nuit } = req.body;
+        const appartement = await AppartementService.createAppartement(superficie, capacite, adresse, prix_nuit);
+        res.status(201).json({message: "Appartement created", appartement});
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Internal Server Error' });
+    }
+};
