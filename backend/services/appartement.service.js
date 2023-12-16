@@ -39,6 +39,32 @@ class AppartementService {
       throw error;
     }
   }
+
+  static async updateAppartement(id, superficie, capacite, adresse, prix_nuit) {
+    try {
+      const appartement = await Appartement.findOne({
+        where: {
+          id: Number(id)
+        }
+      });
+      if (appartement) {
+        await Appartement.update({
+          superficie,
+          capacite,
+          adresse,
+          prix_nuit
+        }, {
+          where: {
+            id: Number(id)
+          }
+        });
+        return appartement;
+      }
+      return null;
+    } catch (error) {
+      throw error;
+    }
+  }
 }
 
 module.exports = AppartementService;
