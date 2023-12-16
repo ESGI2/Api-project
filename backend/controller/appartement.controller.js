@@ -5,9 +5,9 @@ const AppartementService = require("../services/appartement.service");
 
 // Controller for appartement
 
-exports.getAllAppartement = (req, res) => {
+exports.getAllAppartement = async (req, res) => {
     try {
-        const appartements = AppartementService.getAllAppartements();
+        const appartements = await AppartementService.getAllAppartements();
         res.status(200).json(appartements);
     } catch (error) {
         console.error(error);

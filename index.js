@@ -7,7 +7,7 @@ const sequelize = require('./backend/config/db');
 // Connexion à la base de données
 sequelize.sync().then(() => {
   console.log('La connexion à la base de données a été établie avec succès.');
-  const port = 3000;
+  const port = 8000;
   app.listen(port, () => {
     console.log(`Le serveur est en cours d'exécution sur le port ${port}`);
   });

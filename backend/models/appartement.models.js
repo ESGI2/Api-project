@@ -1,7 +1,6 @@
 // Importation des dépendances
 const { DataTypes } = require('sequelize');
 const sequelize = require('../config/db'); // Assurez-vous d'avoir configuré votre connexion à la base de données dans le fichier db.js
-Appartement.create(dadada)
 
 // Définition du modèle Appartement
 const Appartement = sequelize.define('Appartement', {
@@ -30,7 +29,9 @@ const Appartement = sequelize.define('Appartement', {
     type: DataTypes.DECIMAL(10, 2),
     allowNull: false,
   },
-});
-
+}, {
+    timestamps: false, // Désactiver l'ajout automatique des colonnes createdAt et updatedAt
+  });
+  
 // Exportation du modèle
 module.exports = Appartement;
