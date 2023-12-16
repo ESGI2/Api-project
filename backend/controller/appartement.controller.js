@@ -14,3 +14,18 @@ exports.getAllAppartement = async (req, res) => {
         res.status(500).json({ message: 'Internal Server Error' });
     }
 };
+
+exports.getAppartementById = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const appartement = await AppartementService.getAppartementById(id);
+        if (appartement) {
+            res.status(200).json(appartement);
+        } else {
+            res.status(404).json({ message: 'Appartement not found' });
+        }
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Internal Server Error' });
+    }
+};
