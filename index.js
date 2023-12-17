@@ -1,9 +1,9 @@
-// Initialition de l'api express
 const express = require('express');
+const bodyparser = require('body-parser');
 const app = express();
 const dotenv = require('dotenv').config();
 const sequelize = require('./backend/config/db');
-
+const Signin = require('./backend/models/signin.models');
 
 // Middleware pour parser les requêtes POST
 var bodyParser = require('body-parser');
@@ -23,7 +23,8 @@ sequelize.sync().then(() => {
 
 // Importation des routes
 const userRoute = require("./backend/routes/user.route");
-app.use("/user", userRoute);
-
+const signinRoute = require("./backend/routes/signin.route");
 const appartementRoute = require("./backend/routes/appartement.route");
+app.use("/user", userRoute);
+app.use("/signin", signinRoute);
 app.use("/appartement", appartementRoute);
