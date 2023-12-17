@@ -1,7 +1,12 @@
-// signin.service.js
-const bcrypt = require('bcrypt');
+const crypto = require('crypto');
 const jwt = require('jsonwebtoken');
 const User = require('../models/signin.models');
+
+function sha256Hash(input) {
+  const hash = crypto.createHash('sha256');
+  hash.update(input);
+  return hash.digest('hex');
+}
 
 class SigninService {
   static async createUser(pseudo, password, token) {
@@ -10,8 +15,8 @@ class SigninService {
         throw new Error('Pseudo, password et token sont obligatoires.');
       }
 
-      const hashedPassword = await bcrypt.hash(password, 10);
-      const hashedtoken = await bcrypt.hash(token, 10);
+      const hashedPassword = sha256Hash(password)
+      const hashedtoken = sha256Hash(token)
 
       const newUser = await User.create({
         pseudo,
