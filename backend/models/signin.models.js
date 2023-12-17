@@ -21,7 +21,7 @@ const Signin = sequelize.define('user', {
     allowNull: false,
   },
   token: {
-    type: DataTypes.STRING(255),
+    type: DataTypes.STRING(255), // Augmentez la longueur maximale
     allowNull: false,
   },
 }, {
