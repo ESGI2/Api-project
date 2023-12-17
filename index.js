@@ -1,49 +1,26 @@
 const express = require('express');
-const bodyParser = require('body-parser');
-const jwt = require('jsonwebtoken');
-const dotenv = require('dotenv').config();
-const secretKey = process.env.SECRET_KEY // Utilisez la variable d'environnement ou une clé par défaut
-const connection = require('./backend/config/db');
-const addUser = require('./add_user');
-const loginUser = require('./loginUser');
+const bodyparser = require('body-parser');
 const app = express();
+const dotenv = require('dotenv').config();
+const sequelize = require('./backend/config/db');
+const Signin = require('./backend/models/signin.models');
 
-// Utilisez le middleware bodyParser pour analyser le JSON
-app.use(bodyParser.json());
+// Middleware pour parser les requêtes POST
+app.use(bodyparser.json());
 
-// Connexion à la base de données
-const db = connection.connect((err) => {
-  if (err) throw err;
-  console.log('Connecté à la base de données MySQL!');
-});
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
-// Création d'un nouvel utilisateur
-app.post('/addUser', addUser); 
-app.post('/loginUser', loginUser);
+const signinRoute = require("./backend/routes/signin.route");
+app.use("/signin", signinRoute);
 
-// Middleware pour vérifier le token JWT
-function authenticateToken(req, res, next) {
-    const token = req.header('Authorization');
-    if (!token) return res.sendStatus(401);
-
-    jwt.verify(token, secretKey, (err, user) => {
-        if (err) return res.sendStatus(403);
-        req.user = user;
-        next();
-    });
-}
-
-// Route de connexion
-app.post('/login', (req, res) => {
-    // Vérifiez les informations d'authentification ici (par exemple, dans une base de données)
-    const username = req.body.username;
-    const user = { name: username };
-
-    // Créez et signez un token JWT
-    const token = jwt.sign(user, secretKey);
-    res.json({ token });
-});
-
-app.listen(8000, () => {
-  console.log(`Serveur en cours d'exécution`);
+// Synchronisez votre modèle avec la base de données
+sequelize.sync().then(() => {
+  console.log('La connexion à la base de données a été établie avec succès.');
+  const port = 8000;
+  app.listen(port, () => {
+    console.log(`Le serveur est en cours d'exécution sur le port ${port}`);
+  });
+}).catch((error) => {
+  console.error('Erreur lors de la connexion à la base de données:', error);
 });
