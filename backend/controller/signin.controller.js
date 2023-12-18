@@ -1,15 +1,16 @@
-const signinService = require('../services/signin.service.js');
+const signinService = require('../services/signin.service');
 
 exports.postSignIn = async (req, res) => {
   try {
     const { pseudo, password } = req.body;
 
-    // Vérifier que pseudo et password sont définis
-    if (!pseudo || !password) {
-      return res.status(400).json({ message: 'Pseudo ou mot de passe sont obligatoires.' });
+    const result = await signinService.createUser(pseudo, password);
+
+    if (result.error) {
+      return res.status(400).json({ message: result.error });
     }
 
-    const { newUser, userToken } = await signinService.createUser(pseudo, password);
+    const { newUser, userToken } = result;
 
     res.status(201).json({ message: 'Compte créé avec succès', user: newUser, token: userToken });
   } catch (error) {
