@@ -1,4 +1,4 @@
-const { Reservation } = require('../../models/reservation.model');
+const { Reservation } = require('../models/reservation.models.js');
 const jwt = require('jsonwebtoken');
 const { Op } = require('sequelize');
 
@@ -17,7 +17,7 @@ const reservationController = {
     const { reservationId } = req.params;
 
     try {
-      const reservation = await Reservation.findByPk(reservationId); // Correction ici
+      const reservation = await Reservation.findByPk(reservationId);
       if (!reservation) {
         return res.status(404).json({ error: 'Réservation non trouvée' });
       }
@@ -49,6 +49,56 @@ const reservationController = {
       const token = jwt.sign({ userId, role: 'user' }, process.env.JWT_SECRET, { expiresIn: '1h' });
 
       res.status(201).json({ reservation, token });
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ error: 'Erreur serveur' });
+    }
+  },
+
+  updateReservation: async (req, res) => {
+    const { reservationId } = req.params;
+    const { dateDebut, dateFin, prix } = req.body;
+
+    try {
+      const reservation = await Reservation.findByPk(reservationId);
+      if (!reservation) {
+        return res.status(404).json({ error: 'Réservation non trouvée' });
+      }
+
+      const updatedReservation = await Reservation.update({
+        dateDebut,
+        dateFin,
+        prix,
+      }, {
+        where: {
+          id: reservationId,
+        },
+        returning: true,
+      });
+
+      res.status(200).json({ message: 'Réservation mise à jour', reservation: updatedReservation[1][0] });
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ error: 'Erreur serveur' });
+    }
+  },
+
+  deleteReservation: async (req, res) => {
+    const { reservationId } = req.params;
+
+    try {
+      const reservation = await Reservation.findByPk(reservationId);
+      if (!reservation) {
+        return res.status(404).json({ error: 'Réservation non trouvée' });
+      }
+
+      await Reservation.destroy({
+        where: {
+          id: reservationId,
+        },
+      });
+
+      res.status(200).json({ message: 'Réservation supprimée' });
     } catch (error) {
       console.error(error);
       res.status(500).json({ error: 'Erreur serveur' });

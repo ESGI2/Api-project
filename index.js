@@ -4,8 +4,8 @@ const dotenv = require('dotenv').config();
 const bodyParser = require('body-parser');
 const jwt = require('jsonwebtoken');
 const { Op } = require('sequelize');
-const { sequelize } = require('./models/reservation.model.js');
-const { Reservation } = require('./models/reservation.model');
+const { sequelize } = require('./backend/models/reservation.model.js');
+const { Reservation } = require('./backend/models/reservation.model');
 const reservationController = require('./backend/controllers/reservation.controller');
 
 
