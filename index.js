@@ -25,6 +25,8 @@ sequelize.sync().then(() => {
 const userRoute = require("./backend/routes/user.route");
 const signinRoute = require("./backend/routes/signin.route");
 const appartementRoute = require("./backend/routes/appartement.route");
+const reservationRoute = require("./backend/routes/reservation.route");
 app.use("/user", userRoute);
 app.use("/signin", signinRoute);
 app.use("/appartement", appartementRoute);
+app.use("/reservation", reservationRoute);
