@@ -1,11 +1,12 @@
 const { Reservation } = require('../models/reservation.models.js');
+const ReservationService = require("../services/reservation.service");
 const jwt = require('jsonwebtoken');
 const { Op } = require('sequelize');
 
 const reservationController = {
   getAllReservations: async (req, res) => {
     try {
-      const reservations = await Reservation.findAll();
+      const reservations = await ReservationService.getAllReservations();
       res.json(reservations);
     } catch (error) {
       console.error(error);
@@ -17,7 +18,7 @@ const reservationController = {
     const { reservationId } = req.params;
 
     try {
-      const reservation = await Reservation.findByPk(reservationId);
+      const reservation = await ReservationService.findByPk(reservationId);
       if (!reservation) {
         return res.status(404).json({ error: 'Réservation non trouvée' });
       }
@@ -38,7 +39,7 @@ const reservationController = {
         return res.status(400).json({ error: 'L\'appartement n\'est pas disponible pour ces dates' });
       }
 
-      const reservation = await Reservation.create({
+      const reservation = await ReservationService.create({
         appartementId,
         userId,
         dateDebut,
@@ -60,21 +61,24 @@ const reservationController = {
     const { dateDebut, dateFin, prix } = req.body;
 
     try {
-      const reservation = await Reservation.findByPk(reservationId);
+      const reservation = await ReservationService.findByPk(reservationId);
       if (!reservation) {
         return res.status(404).json({ error: 'Réservation non trouvée' });
       }
 
-      const updatedReservation = await Reservation.update({
+      const updatedReservation = await ReservationService.update({
         dateDebut,
         dateFin,
         prix,
-      }, {
+    }, {
         where: {
-          id: reservationId,
+            id: reservationId,
+            userId: req.user.id, 
         },
         returning: true,
-      });
+    });
+    
+    
 
       res.status(200).json({ message: 'Réservation mise à jour', reservation: updatedReservation[1][0] });
     } catch (error) {
@@ -87,12 +91,12 @@ const reservationController = {
     const { reservationId } = req.params;
 
     try {
-      const reservation = await Reservation.findByPk(reservationId);
+      const reservation = await ReservationService.findByPk(reservationId);
       if (!reservation) {
         return res.status(404).json({ error: 'Réservation non trouvée' });
       }
 
-      await Reservation.destroy({
+      await ReservationService.destroy({
         where: {
           id: reservationId,
         },
