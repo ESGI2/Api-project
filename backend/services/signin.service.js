@@ -20,31 +20,20 @@ class SigninService {
         return { error: 'Le pseudo existe déjà.' };
       }
 
-      const hashedPassword = sha256Hash(password);
-
       const generatedToken = jwt.sign(
-        { pseudo, hashedPassword, userId: null }, // userId initialisé à null lors de la création
+        { pseudo, password, userId: null }, // userId initialisé à null lors de la création
         process.env.JWT_SECRET,
         { expiresIn: '1w' }
       ).slice(0, 255);
 
       const newUser = await User.create({
         pseudo,
-        password: hashedPassword,
+        password: sha256Hash(password),
         role: 'client',
-        token: generatedToken,
+        token: generatedToken, 
       });
 
-      // Mettez à jour le token avec l'ID de l'utilisateur après la création
-      const updatedToken = jwt.sign(
-        { pseudo, hashedPassword, userId: newUser.id },
-        process.env.JWT_SECRET,
-        { expiresIn: '1w' }
-      ).slice(0, 255);
-
-      await newUser.update({ token: updatedToken }); // Mettez à jour le token dans la base de données
-
-      return { newUser, userToken: updatedToken };
+      return { newUser, userToken: generatedToken };
     } catch (error) {
       console.error(error);
       return { error: 'Erreur à la création du compte' };
