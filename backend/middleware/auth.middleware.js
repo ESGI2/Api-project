@@ -1,5 +1,5 @@
 const jwt = require('jsonwebtoken');
-const { findUserById } = require('../services/user.service'); // Importez votre service utilisateur
+const { getUserById, isAdmin } = require('../services/user.service'); // Importez votre service utilisateur
 
 function authenticateToken(req, res, next) {
   const token = req.header('Authorization');
@@ -10,17 +10,16 @@ function authenticateToken(req, res, next) {
     if (err) return res.status(403).json({ message: 'Token invalide' });
 
     try {
-      const user = await findUserById(decodedToken.userId); // Assurez-vous d'avoir une fonction findUserById dans votre service utilisateur
+      const user = await getUserById(decodedToken.userId); // Assurez-vous d'avoir une fonction findUserById dans votre service utilisateur
       if (!user) return res.status(401).json({ message: 'Utilisateur introuvable' });
 
-      req.user = {
-        id: user.id,
-        username: user.username,
-        // Autres attributs utilisateur que vous souhaitez inclure
-      };
+      // On check si l'utilisateur est admin
+      if (isAdmin(user.id) == True) {
+        req.user.isAdmin = true;
+      }
 
-      // Vous pouvez également vérifier les autorisations ici et ajouter des informations au req.user en conséquence
-      // Exemple : req.user.isAdmin = user.isAdmin;
+      // On met l'id de utilisateur dans une variable pour la prochaine fonction
+      req.user.userId = user.id;
 
       next();
     } catch (error) {

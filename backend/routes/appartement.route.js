@@ -6,6 +6,7 @@ const {
     updateAppartement,
     deleteAppartement
 } = require("../controller/appartement.controller");
+const { authenticateToken } = require('../middleware/auth.middleware');
 
 const router = express.Router();
 
@@ -13,6 +14,6 @@ router.get('/', getAllAppartement);
 router.get('/:id', getAppartementById);
 router.post('/', createAppartement);
 router.put('/:id', updateAppartement);
-router.delete('/:id', deleteAppartement);
+router.delete('/:id', authenticateToken, deleteAppartement);
 
 module.exports = router;

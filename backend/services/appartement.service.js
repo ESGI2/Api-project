@@ -68,6 +68,9 @@ class AppartementService {
   }
 
   static async deleteAppartement(id) {
+    // Vérifier si la personne qui supprime est admin
+    if (req.user.isAdmin == false) return res.status(403).json({ message: 'Vous n\'avez pas les droits pour effectuer cette action' });
+    
     try {
       const appartement = await Appartement.findOne({
         where: {
