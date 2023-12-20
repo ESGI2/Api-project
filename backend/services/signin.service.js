@@ -5,7 +5,7 @@ const User = require('../models/user.models');
 function sha256Hash(input) {
   const hash = crypto.createHash('sha256');
   hash.update(input);
-  return hash.digest('hex').slice(0, 255);
+  return hash.digest('hex');
 }
 
 class SigninService {
@@ -22,9 +22,11 @@ class SigninService {
 
       const hashedPassword = sha256Hash(password);
 
-      const generatedToken = jwt.sign({ pseudo, hashedPassword }, process.env.JWT_SECRET, {
-        expiresIn: '1w',
-      }).slice(0, 255);
+      const generatedToken = jwt.sign(
+        { pseudo, hashedPassword, userId: null }, // userId initialisé à null lors de la création
+        process.env.JWT_SECRET,
+        { expiresIn: '1w' }
+      ).slice(0, 255);
 
       const newUser = await User.create({
         pseudo,
@@ -33,7 +35,16 @@ class SigninService {
         token: generatedToken,
       });
 
-      return { newUser, userToken: generatedToken };
+      // Mettez à jour le token avec l'ID de l'utilisateur après la création
+      const updatedToken = jwt.sign(
+        { pseudo, hashedPassword, userId: newUser.id },
+        process.env.JWT_SECRET,
+        { expiresIn: '1w' }
+      ).slice(0, 255);
+
+      await newUser.update({ token: updatedToken }); // Mettez à jour le token dans la base de données
+
+      return { newUser, userToken: updatedToken };
     } catch (error) {
       console.error(error);
       return { error: 'Erreur à la création du compte' };

@@ -1,5 +1,4 @@
 const express = require('express');
-const bodyparser = require('body-parser');
 const app = express();
 const dotenv = require('dotenv').config();
 const sequelize = require('./backend/config/db');
@@ -23,7 +22,9 @@ sequelize.sync().then(() => {
 // Importation des routes
 const userRoute = require("./backend/routes/user.route");
 const signinRoute = require("./backend/routes/signin.route");
+const loginRoute = require('./backend/routes/login.route');
 const appartementRoute = require("./backend/routes/appartement.route");
 app.use("/user", userRoute);
 app.use("/signin", signinRoute);
+app.use('/login', loginRoute);
 app.use("/appartement", appartementRoute);
