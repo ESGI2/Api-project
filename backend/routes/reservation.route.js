@@ -1,9 +1,17 @@
-const express = require('express');
+const express = require("express");
+const {
+    getAllReservations,
+    getReservationById,
+    createReservation,
+    updateReservation,
+    deleteReservation
+} = require("../controller/reservation.controller");
 const router = express.Router();
-const reservationController = require('../controllers/reservationController');
 
-router.get('/api/reservation', authenticateUser, reservationController.getAllReservations);
-router.get('/api/reservation/:reservationId', authenticateUser, reservationController.getReservationById);
-router.post('/api/reservation', authenticateUser, reservationController.createReservation);
+router.get('/', getAllReservations);
+router.get('/:reservationId', getReservationById);
+router.post('/', createReservation);
+router.put('/:reservationId', updateReservation);
+router.delete('/:reservationId', deleteReservation);
 
 module.exports = router;
