@@ -1,8 +1,7 @@
-// signin.models.js
 const { DataTypes } = require('sequelize');
 const sequelize = require('../config/db');
 
-const Signin = sequelize.define('user', {
+const User = sequelize.define('user', {
   id: {
     type: DataTypes.INTEGER,
     primaryKey: true,
@@ -11,21 +10,22 @@ const Signin = sequelize.define('user', {
   pseudo: {
     type: DataTypes.STRING(50),
     allowNull: false,
+    unique: true,
   },
   password: {
     type: DataTypes.STRING(255),
     allowNull: false,
   },
-  role: { 
+  role: {
     type: DataTypes.STRING(255),
     allowNull: false,
   },
   token: {
-    type: DataTypes.STRING(255),
-    allowNull: false,
+    type: DataTypes.STRING(255), 
+    allowNull: true, 
   },
 }, {
   timestamps: false,
 });
 
-module.exports = Signin;
+module.exports = User;
