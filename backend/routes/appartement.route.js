@@ -6,6 +6,7 @@ const {
     updateAppartement,
     deleteAppartement
 } = require("../controller/appartement.controller");
+const { authenticateToken } = require('../middleware/auth.middleware');
 
 const router = express.Router();
 
