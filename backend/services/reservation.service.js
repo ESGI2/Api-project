@@ -1,4 +1,4 @@
-const { Sequelize, Op } = require('sequelize');
+const  {Sequelize}  = require('sequelize');
 const Reservation = require('../models/reservation.models.js');
 const Appartement = require ('../models/appartement.models.js')
 
@@ -14,9 +14,9 @@ class ReservationService {
     }
   }
 
-  static async getReservationById(reservationId) {
+  static async getReservationById(id) {
     try {
-      const reservation = await Reservation.findByPk(reservationId);
+      const reservation = await Reservation.findByPk(id);
       return reservation;
     } catch (error) {
       console.error('Erreur lors de la récupération d\'une réservation par ID:', error);
@@ -24,24 +24,24 @@ class ReservationService {
     }
   }
 
-  static async createReservation(appartementId, userId, date_debut, date_fin) {
+  static async createReservation(appartement_id, client_id, date_debut, date_fin) {
     try {
       const reservation = await Reservation.create({
-        appartement_id: appartementId, 
-        client_id: userId, 
+        appartement_id, 
+        client_id, 
         date_debut,
         date_fin,
       });
-      return { reservation, token: "your_generated_token" };
+      return reservation;
     } catch (error) {
       console.error('Erreur lors de la création d\'une réservation:', error);
       throw error;
     }
   }
 
-  static async updateReservation(reservationId, date_debut, date_fin) {
+  static async updateReservation(id, date_debut, date_fin) {
     try {
-      const reservation = await Reservation.findByPk(reservationId);
+      const reservation = await Reservation.findByPk(id);
 
         await reservation.update({
           date_debut,
@@ -57,9 +57,9 @@ class ReservationService {
     }
   }
 
-  static async deleteReservation(reservationId) {
+  static async deleteReservation(id) {
     try {
-      const reservation = await Reservation.findByPk(reservationId);
+      const reservation = await Reservation.findByPk(id);
       if (reservation) {
         await reservation.destroy();
         return reservation;
@@ -70,8 +70,8 @@ class ReservationService {
       throw error;
     }
   }
-
-}
+  
+  }
 
 module.exports = ReservationService;
 

@@ -1,6 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const ReservationService = require("../services/reservation.service.js");
+const Reservation = require("../models/reservation.models.js")
 const Appartement = require("../models/appartement.models.js");
 
 exports.getAllReservations = async (req, res) => {
@@ -15,8 +16,8 @@ exports.getAllReservations = async (req, res) => {
 
 exports.getReservationById = async (req, res) => {
     try {
-        const { reservationId } = req.params;
-        const reservation = await ReservationService.getReservationById(reservationId);
+        const { id } = req.params;
+        const reservation = await ReservationService.getReservationById(id);
         if (!reservation) {
             res.status(404).json({ message: 'Reservation not found' });
         } else {
@@ -30,7 +31,7 @@ exports.getReservationById = async (req, res) => {
 
 exports.createReservation = async (req, res) => {
     try {
-        const { dateDebut, dateFin, client_id, appartement_id } = req.body;
+        const { date_debut, date_fin, client_id, appartement_id } = req.body;
         const appartement = await Appartement.findByPk(appartement_id);
         if (!appartement) {
             return res.status(404).json({ message: 'Appartement not found' });
@@ -39,8 +40,8 @@ exports.createReservation = async (req, res) => {
         const result = await ReservationService.createReservation(
             appartement_id,
             client_id,
-            dateDebut,
-            dateFin,
+            date_debut,
+            date_fin,
         );
 
         res.status(201).json({ message: "Reservation created", reservation: result.reservation, token: result.token });
@@ -51,32 +52,38 @@ exports.createReservation = async (req, res) => {
 };
 
 exports.updateReservation = async (req, res) => {
+    const { id } = req.params;
+    const { date_debut, date_fin } = req.body;
     try {
-        const { reservationId } = req.params;
-        const { dateDebut, dateFin } = req.body;
-        const reservation = await ReservationService.updateReservation(reservationId, dateDebut, dateFin);
-        if (!reservation) {
-            res.status(404).json({ message: 'Reservation not found' });
-        } else {
-            res.status(200).json({ message: "Reservation updated", reservation });
-        }
+      const reservation = await Reservation.findByPk(id);
+      if (reservation) {
+        await reservation.update({
+          date_debut,
+          date_fin,
+        });
+        res.json(reservation);
+      } else {
+        res.status(404).json({ error: 'Réservation non trouvée.' });
+      }
     } catch (error) {
-        console.error('Erreur lors de la mise à jour d\'une réservation:', error);
-        res.status(500).json({ message: 'Internal Server Error' });
+      console.error(error);
+      res.status(500).json({ error: 'Erreur lors de la mise à jour de la réservation.' });
     }
-};
+  };
 
 exports.deleteReservation = async (req, res) => {
+    const { id } = req.params;
     try {
-        const { reservationId } = req.params;
-        const reservation = await ReservationService.deleteReservation(reservationId);
-        if (!reservation) {
-            res.status(404).json({ message: 'Reservation not found' });
-        } else {
-            res.status(200).json({ message: "Reservation deleted" });
-        }
+      const reservation = await Reservation.findByPk(id);
+      if (reservation) {
+        await reservation.destroy();
+        res.json(reservation);
+      } else {
+        res.status(404).json({ error: 'Réservation non trouvée.' });
+      }
     } catch (error) {
-        console.error('Erreur lors de la suppression d\'une réservation:', error);
-        res.status(500).json({ message: 'Internal Server Error' });
+      console.error(error);
+      res.status(500).json({ error: 'Erreur lors de la suppression de la réservation.' });
     }
-};
+  };
+
