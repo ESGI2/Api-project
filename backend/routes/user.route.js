@@ -7,7 +7,7 @@ const {
 const router = express.Router();
 const {authenticateToken} = require('../middleware/auth.middleware');
 
-router.get('/', getAllUser);
-router.get('/:id', getUserById);
+router.get('/', authenticateToken, getAllUser);
+router.get('/:id',  authenticateToken, getUserById);
 
 module.exports = router;

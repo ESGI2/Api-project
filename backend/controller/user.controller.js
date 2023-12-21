@@ -6,10 +6,7 @@ const AppartementServices = require('../services/appartement.service');
 const ReservationServices = require('../services/reservation.service');
 
 module.exports.getSelfUser = async (req, res) => {
-
-    // On récupère l'utilisateur connecté
-    const id = req.user.id;
-
+    
     try {
         const user = await UserServices.getUserById(id);
         if (user) {
@@ -25,6 +22,13 @@ module.exports.getSelfUser = async (req, res) => {
 }
 
 module.exports.getAllUser = async (req, res) => {
+
+    const role = req.user.role;
+
+    if (role != "admin") {
+        res.status(401).json({ message: 'Unauthorized' });
+    }
+
     try {
         const users = await UserServices.getAllUser();
         res.status(200).json(users);
@@ -35,6 +39,13 @@ module.exports.getAllUser = async (req, res) => {
 }
 
 module.exports.getUserById = async (req, res) => {
+
+    const role = req.user.role;
+
+    if (role != "admin") {
+        res.status(401).json({ message: 'Unauthorized' });
+    }
+
     try {
         const user = await UserServices.getUserById(req.params.id);
         if (user) {
