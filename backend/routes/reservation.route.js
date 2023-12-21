@@ -7,11 +7,12 @@ const {
     deleteReservation
 } = require("../controller/reservation.controller.js");
 const router = express.Router();
+const { authenticateToken } = require('../middleware/auth.middleware');
 
-router.get('/', getAllReservations);
-router.get('/:id', getReservationById);
-router.post('/', createReservation);
-router.put('/:id', updateReservation);
-router.delete('/:id', deleteReservation);
+router.get('/',authenticateToken, getAllReservations);
+router.get('/:id',authenticateToken, getReservationById);
+router.post('/', authenticateToken, createReservation);
+router.put('/:id',authenticateToken, updateReservation);
+router.delete('/:id',authenticateToken, deleteReservation);
 
 module.exports = router;

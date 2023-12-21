@@ -5,29 +5,54 @@ const Reservation = require("../models/reservation.models.js")
 const Appartement = require("../models/appartement.models.js");
 
 exports.getAllReservations = async (req, res) => {
-    try {
-        const reservations = await ReservationService.getAllReservations();
-        res.status(200).json(reservations);
-    } catch (error) {
-        console.error('Erreur lors de la récupération de toutes les réservations:', error);
-        res.status(500).json({ message: 'Internal Server Error' });
-    }
-};
+    const role = req.user.role;
+    const reservation = await ReservationService.getAllReservations();
+    //const reservations = await ReservationService.getAllReservations();
 
-exports.getReservationById = async (req, res) => {
+    if(!reservation) {
+        res.status(404).json({ message: 'Reservation not found' });
+    } else {
+        if (role == "admin") {
     try {
-        const { id } = req.params;
-        const reservation = await ReservationService.getReservationById(id);
-        if (!reservation) {
-            res.status(404).json({ message: 'Reservation not found' });
-        } else {
-            res.status(200).json(reservation);
-        }
+        res.status(200).json(reservation);
     } catch (error) {
         console.error('Erreur lors de la récupération d\'une réservation par ID:', error);
         res.status(500).json({ message: 'Internal Server Error' });
     }
-};
+} else {
+    res.status(401).json({ message: 'Unauthorized' });
+}
+}};
+
+exports.getReservationById = async (req, res) => {
+    const user_id = req.user.id;
+    const role = req.user.role;
+    const id = req.params.id;
+    const reservation = await ReservationService.getReservationById(id);
+
+    if(!reservation) {
+        res.status(404).json({ message: 'Reservation not found' });
+    } else {
+        if (reservation.client_id == user_id || role == "admin") {
+        try {
+           const { id } = req.params;
+                
+            if (!reservation) {
+                res.status(404).json({ message: 'Reservation not found' });
+            } else {
+                res.status(200).json(reservation);
+            }
+    
+    } catch (error) {
+        console.error('Erreur lors de la récupération d\'une réservation par ID:', error);
+        res.status(500).json({ message: 'Internal Server Error' });
+    }
+} else {
+    res.status(401).json({ message: 'Unauthorized' });
+}
+}};
+
+
 
 exports.createReservation = async (req, res) => {
     try {
@@ -51,39 +76,61 @@ exports.createReservation = async (req, res) => {
     }
 };
 
-exports.updateReservation = async (req, res) => {
+  exports.updateReservation = async (req, res) => {
+
     const { id } = req.params;
     const { date_debut, date_fin } = req.body;
-    try {
-      const reservation = await Reservation.findByPk(id);
-      if (reservation) {
-        await reservation.update({
-          date_debut,
-          date_fin,
-        });
-        res.json(reservation);
-      } else {
-        res.status(404).json({ error: 'Réservation non trouvée.' });
-      }
-    } catch (error) {
-      console.error(error);
-      res.status(500).json({ error: 'Erreur lors de la mise à jour de la réservation.' });
-    }
-  };
 
-exports.deleteReservation = async (req, res) => {
-    const { id } = req.params;
-    try {
-      const reservation = await Reservation.findByPk(id);
-      if (reservation) {
-        await reservation.destroy();
-        res.json({ message: 'Réservation supprimée.' });
-      } else {
-        res.status(404).json({ error: 'Réservation non trouvée.' });
-      }
-    } catch (error) {
-      console.error(error);
-      res.status(500).json({ error: 'Erreur lors de la suppression de la réservation.' });
+    const user_id = req.user.id;
+    const role = req.user.role;
+    console.log(user_id, role);
+
+    const reservation = await ReservationService.getReservationById(id);
+    if (!reservation) {
+        res.status(404).json({ message: 'Reservation not found' });
+    } else {
+        if (reservation.client_id == user_id || role == "admin") {
+            try {
+                const reservation = await ReservationService.updateReservation(id, date_debut, date_fin );
+                if (!reservation) {
+                    res.status(404).json({ message: 'Reservation not found' });
+                }
+                else res.status(200).json({message: "Reservation updated", reservation});
+            } catch (error) {
+                console.error(error);
+                res.status(500).json({ message: 'Internal Server Error' });
+            }    
+        } else {
+            res.status(401).json({ message: 'Unauthorized' });
+        }
     }
-  };
+};
+
+
+  exports.deleteReservation = async (req, res) => {
+
+    const user_id = req.user.id;
+    const role = req.user.role;
+    const id = req.params.id;
+
+    const reservation = await ReservationService.getReservationById(id);
+    if (!reservation) {
+        res.status(404).json({ message: 'Reservation not found' });
+    } else {
+        if (reservation.client_id == user_id || role == "admin") {
+            try {
+                const reservation = await ReservationService.deleteReservation(id);
+                if (!reservation) {
+                    res.status(404).json({ message: 'Reservation not found' });
+                }
+                else res.status(200).json({message: "Reservation deleted"});
+            } catch (error) {
+                console.error(error);
+                res.status(500).json({ message: 'Internal Server Error' });
+            }    
+        } else {
+            res.status(401).json({ message: 'Unauthorized' });
+        }
+    }
+}
 
