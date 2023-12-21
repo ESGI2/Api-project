@@ -77,7 +77,7 @@ exports.deleteReservation = async (req, res) => {
       const reservation = await Reservation.findByPk(id);
       if (reservation) {
         await reservation.destroy();
-        res.json(reservation);
+        res.json({ message: 'Réservation supprimée.' });
       } else {
         res.status(404).json({ error: 'Réservation non trouvée.' });
       }
