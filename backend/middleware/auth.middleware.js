@@ -1,31 +1,25 @@
 const jwt = require('jsonwebtoken');
-const { getUserById, isAdmin } = require('../services/user.service'); // Importez votre service utilisateur
+const { getUserByToken } = require('../services/user.service'); // Importez votre service utilisateur
 
-function authenticateToken(req, res, next) {
+async function authenticateToken(req, res, next) {
   const token = req.header('Authorization');
-
   if (!token) return res.status(401).json({ message: 'Token manquant' });
 
-  jwt.verify(token, process.env.JWT_SECRET, async (err, decodedToken) => {
-    if (err) return res.status(403).json({ message: 'Token invalide' });
+  try {
+    // On récup l'utilisateur associé au token
+    const user = await getUserByToken(token);
 
-    try {
-      const user = await getUserById(decodedToken.userId); // Assurez-vous d'avoir une fonction findUserById dans votre service utilisateur
-      if (!user) return res.status(401).json({ message: 'Utilisateur introuvable' });
+    // On ajoute l'id et le role de l'utilisateur dans la requête
+    req.user = user;
 
-      // On check si l'utilisateur est admin
-      if (isAdmin(user.id) == True) {
-        req.user.isAdmin = true;
-      }
+  } catch (error) {
+    return res.status(403).json({ message: 'Token invalide' });
+  }
 
-      // On met l'id de utilisateur dans une variable pour la prochaine fonction
-      req.user.userId = user.id;
+  console.log(req.user.id);
 
-      next();
-    } catch (error) {
-      return res.status(500).json({ message: 'Erreur de l\'application' });
-    }
-  });
+
+  next();
 }
 
 module.exports = {

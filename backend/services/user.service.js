@@ -50,12 +50,27 @@ class UserServices {
                     id: Number(id)
                 }
             });
+            if (!user) return null;
             if (user.role == "admin") return true;
             else return false;
         } catch (error) {
             throw error;
         }
     }
+
+    static async getUserByToken(token) {
+        try {
+            const user = await User.findOne({
+                where: {
+                    token: token
+                }
+            });
+        if (user) return user;
+        else return null;
+        } catch (error) {
+            throw error;
+        }
+    }   
 }
 
 module.exports = UserServices;
