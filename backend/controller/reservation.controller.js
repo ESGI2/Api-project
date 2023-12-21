@@ -1,136 +1,82 @@
-const { Reservation } = require('../models/reservation.models.js');
-const ReservationService = require("../services/reservation.service");
-const jwt = require('jsonwebtoken');
-const { Op } = require('sequelize');
+const express = require("express");
+const router = express.Router();
+const ReservationService = require("../services/reservation.service.js");
+const Appartement = require("../models/appartement.models.js");
 
-const reservationController = {
-  getAllReservations: async (req, res) => {
+exports.getAllReservations = async (req, res) => {
     try {
-      const reservations = await ReservationService.getAllReservations();
-      res.json(reservations);
+        const reservations = await ReservationService.getAllReservations();
+        res.status(200).json(reservations);
     } catch (error) {
-      console.error(error);
-      res.status(500).json({ error: 'Erreur serveur' });
+        console.error('Erreur lors de la récupération de toutes les réservations:', error);
+        res.status(500).json({ message: 'Internal Server Error' });
     }
-  },
-
-  getReservationById: async (req, res) => {
-    const { reservationId } = req.params;
-
-    try {
-      const reservation = await ReservationService.findByPk(reservationId);
-      if (!reservation) {
-        return res.status(404).json({ error: 'Réservation non trouvée' });
-      }
-      res.json(reservation);
-    } catch (error) {
-      console.error(error);
-      res.status(500).json({ error: 'Erreur serveur' });
-    }
-  },
-
-  createReservation: async (req, res) => {
-    const { appartementId, dateDebut, dateFin, prix } = req.body;
-    const userId = req.user.id;
-
-    try {
-      const isAvailable = await checkAppartementAvailability(appartementId, dateDebut, dateFin);
-      if (!isAvailable) {
-        return res.status(400).json({ error: 'L\'appartement n\'est pas disponible pour ces dates' });
-      }
-
-      const reservation = await ReservationService.create({
-        appartementId,
-        userId,
-        dateDebut,
-        dateFin,
-        prix,
-      });
-
-      const token = jwt.sign({ userId, role: 'user' }, process.env.JWT_SECRET, { expiresIn: '1h' });
-
-      res.status(201).json({ reservation, token });
-    } catch (error) {
-      console.error(error);
-      res.status(500).json({ error: 'Erreur serveur' });
-    }
-  },
-
-  updateReservation: async (req, res) => {
-    const { reservationId } = req.params;
-    const { dateDebut, dateFin, prix } = req.body;
-
-    try {
-      const reservation = await ReservationService.findByPk(reservationId);
-      if (!reservation) {
-        return res.status(404).json({ error: 'Réservation non trouvée' });
-      }
-
-      const updatedReservation = await ReservationService.update({
-        dateDebut,
-        dateFin,
-        prix,
-    }, {
-        where: {
-            id: reservationId,
-            userId: req.user.id, 
-        },
-        returning: true,
-    });
-    
-    
-
-      res.status(200).json({ message: 'Réservation mise à jour', reservation: updatedReservation[1][0] });
-    } catch (error) {
-      console.error(error);
-      res.status(500).json({ error: 'Erreur serveur' });
-    }
-  },
-
-  deleteReservation: async (req, res) => {
-    const { reservationId } = req.params;
-
-    try {
-      const reservation = await ReservationService.findByPk(reservationId);
-      if (!reservation) {
-        return res.status(404).json({ error: 'Réservation non trouvée' });
-      }
-
-      await ReservationService.destroy({
-        where: {
-          id: reservationId,
-        },
-      });
-
-      res.status(200).json({ message: 'Réservation supprimée' });
-    } catch (error) {
-      console.error(error);
-      res.status(500).json({ error: 'Erreur serveur' });
-    }
-  },
 };
 
-async function checkAppartementAvailability(appartementId, dateDebut, dateFin) {
-  try {
-    const existingReservations = await Reservation.findAll({
-      where: {
-        appartementId,
-        [Op.or]: [
-          {
-            dateDebut: { [Op.between]: [dateDebut, dateFin] },
-          },
-          {
-            dateFin: { [Op.between]: [dateDebut, dateFin] },
-          },
-        ],
-      },
-    });
+exports.getReservationById = async (req, res) => {
+    try {
+        const { reservationId } = req.params;
+        const reservation = await ReservationService.getReservationById(reservationId);
+        if (!reservation) {
+            res.status(404).json({ message: 'Reservation not found' });
+        } else {
+            res.status(200).json(reservation);
+        }
+    } catch (error) {
+        console.error('Erreur lors de la récupération d\'une réservation par ID:', error);
+        res.status(500).json({ message: 'Internal Server Error' });
+    }
+};
 
-    return existingReservations.length === 0;
-  } catch (error) {
-    console.error(error);
-    throw new Error('Erreur lors de la vérification de la disponibilité de l\'appartement.');
-  }
-}
+exports.createReservation = async (req, res) => {
+    try {
+        const { dateDebut, dateFin, client_id, appartement_id } = req.body;
+        const appartement = await Appartement.findByPk(appartement_id);
+        if (!appartement) {
+            return res.status(404).json({ message: 'Appartement not found' });
+        }
 
-module.exports = reservationController;
+        const result = await ReservationService.createReservation(
+            appartement_id,
+            client_id,
+            dateDebut,
+            dateFin,
+        );
+
+        res.status(201).json({ message: "Reservation created", reservation: result.reservation, token: result.token });
+    } catch (error) {
+        console.error('Erreur lors de la création d\'une réservation:', error);
+        res.status(500).json({ message: 'Internal Server Error' });
+    }
+};
+
+exports.updateReservation = async (req, res) => {
+    try {
+        const { reservationId } = req.params;
+        const { dateDebut, dateFin } = req.body;
+        const reservation = await ReservationService.updateReservation(reservationId, dateDebut, dateFin);
+        if (!reservation) {
+            res.status(404).json({ message: 'Reservation not found' });
+        } else {
+            res.status(200).json({ message: "Reservation updated", reservation });
+        }
+    } catch (error) {
+        console.error('Erreur lors de la mise à jour d\'une réservation:', error);
+        res.status(500).json({ message: 'Internal Server Error' });
+    }
+};
+
+exports.deleteReservation = async (req, res) => {
+    try {
+        const { reservationId } = req.params;
+        const reservation = await ReservationService.deleteReservation(reservationId);
+        if (!reservation) {
+            res.status(404).json({ message: 'Reservation not found' });
+        } else {
+            res.status(200).json({ message: "Reservation deleted" });
+        }
+    } catch (error) {
+        console.error('Erreur lors de la suppression d\'une réservation:', error);
+        res.status(500).json({ message: 'Internal Server Error' });
+    }
+};

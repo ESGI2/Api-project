@@ -1,5 +1,7 @@
-const { Reservation } = require('../models/reservation.models');
-const { Op } = require('sequelize');
+const { Sequelize, Op } = require('sequelize');
+const Reservation = require('../models/reservation.models.js');
+const Appartement = require ('../models/appartement.models.js')
+
 
 class ReservationService {
   static async getAllReservations() {
@@ -7,6 +9,7 @@ class ReservationService {
       const reservations = await Reservation.findAll();
       return reservations;
     } catch (error) {
+      console.error(error);
       throw error;
     }
   }
@@ -16,77 +19,40 @@ class ReservationService {
       const reservation = await Reservation.findByPk(reservationId);
       return reservation;
     } catch (error) {
+      console.error('Erreur lors de la récupération d\'une réservation par ID:', error);
       throw error;
     }
   }
 
-  static async createReservation(appartementId, userId, dateDebut, dateFin, prix) {
+  static async createReservation(appartementId, userId, date_debut, date_fin) {
     try {
-      const isAvailable = await this.checkAppartementAvailability(appartementId, dateDebut, dateFin);
-      if (!isAvailable) {
-        throw new Error('L\'appartement n\'est pas disponible pour ces dates.');
-      }
-
       const reservation = await Reservation.create({
-        appartementId,
-        userId,
-        dateDebut,
-        dateFin,
-        prix,
+        appartement_id: appartementId, 
+        client_id: userId, 
+        date_debut,
+        date_fin,
       });
-
-      const token = this.generateToken(userId, 'user');
-
-      return { reservation, token };
+      return { reservation, token: "your_generated_token" };
     } catch (error) {
+      console.error('Erreur lors de la création d\'une réservation:', error);
       throw error;
     }
   }
 
-  static async checkAppartementAvailability(appartementId, dateDebut, dateFin) {
-    try {
-      const existingReservations = await Reservation.findAll({
-        where: {
-          appartementId,
-          [Op.or]: [
-            {
-              dateDebut: { [Op.between]: [dateDebut, dateFin] },
-            },
-            {
-              dateFin: { [Op.between]: [dateDebut, dateFin] },
-            },
-          ],
-        },
-      });
-
-      return existingReservations.length === 0;
-    } catch (error) {
-      throw new Error('Erreur lors de la vérification de la disponibilité de l\'appartement.');
-    }
-  }
-
-  static generateToken(userId, role) {
-    const token = 'ton_code_pour_generer_le_token';
-    return token;
-  }
-
-  static async updateReservation(reservationId, dateDebut, dateFin, prix) {
+  static async updateReservation(reservationId, date_debut, date_fin) {
     try {
       const reservation = await Reservation.findByPk(reservationId);
-      if (reservation) {
-        await Reservation.update({
-          dateDebut,
-          dateFin,
-          prix,
-        }, {
-          where: {
-            id: reservationId,
-          },
+
+        await reservation.update({
+          date_debut,
+          date_fin,
         });
+
         return reservation;
-      }
+    
       return null;
     } catch (error) {
+      console.error('Erreur lors de la mise à jour d\'une réservation:', error);
       throw error;
     }
   }
@@ -95,18 +61,17 @@ class ReservationService {
     try {
       const reservation = await Reservation.findByPk(reservationId);
       if (reservation) {
-        await Reservation.destroy({
-          where: {
-            id: reservationId,
-          },
-        });
+        await reservation.destroy();
         return reservation;
       }
       return null;
     } catch (error) {
+      console.error('Erreur lors de la suppression d\'une réservation:', error);
       throw error;
     }
   }
+
 }
 
 module.exports = ReservationService;
+
