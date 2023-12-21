@@ -1,6 +1,7 @@
 const crypto = require('crypto');
 const jwt = require('jsonwebtoken');
-const { User } = require('../models/user.models');
+const Sequelize = require('sequelize');
+const User = require('../models/user.models');
 
 async function sha256Hash(input) {
   const hash = crypto.createHash('sha256');
