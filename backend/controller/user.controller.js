@@ -7,6 +7,8 @@ const ReservationServices = require('../services/reservation.service');
 
 module.exports.getSelfUser = async (req, res) => {
     
+    const id = req.user.id;
+
     try {
         const user = await UserServices.getUserById(id);
         if (user) {
