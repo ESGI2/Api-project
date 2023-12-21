@@ -5,13 +5,13 @@ const {
     createReservation,
     updateReservation,
     deleteReservation
-} = require("../controller/reservation.controller");
+} = require("../controller/reservation.controller.js");
 const router = express.Router();
 
 router.get('/', getAllReservations);
-router.get('/:reservationId', getReservationById);
+router.get('/:id', getReservationById);
 router.post('/', createReservation);
-router.put('/:reservationId', updateReservation);
-router.delete('/:reservationId', deleteReservation);
+router.put('/:id', updateReservation);
+router.delete('/:id', deleteReservation);
 
 module.exports = router;

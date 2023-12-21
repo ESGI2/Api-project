@@ -1,5 +1,7 @@
-const { Reservation } = require('../models/reservation.models');
-const { Op } = require('sequelize');
+const  {Sequelize}  = require('sequelize');
+const Reservation = require('../models/reservation.models.js');
+const Appartement = require ('../models/appartement.models.js')
+
 
 class ReservationService {
   static async getAllReservations() {
@@ -7,106 +9,69 @@ class ReservationService {
       const reservations = await Reservation.findAll();
       return reservations;
     } catch (error) {
+      console.error(error);
       throw error;
     }
   }
 
-  static async getReservationById(reservationId) {
+  static async getReservationById(id) {
     try {
-      const reservation = await Reservation.findByPk(reservationId);
+      const reservation = await Reservation.findByPk(id);
       return reservation;
     } catch (error) {
+      console.error('Erreur lors de la récupération d\'une réservation par ID:', error);
       throw error;
     }
   }
 
-  static async createReservation(appartementId, userId, dateDebut, dateFin, prix) {
+  static async createReservation(appartement_id, client_id, date_debut, date_fin) {
     try {
-      const isAvailable = await this.checkAppartementAvailability(appartementId, dateDebut, dateFin);
-      if (!isAvailable) {
-        throw new Error('L\'appartement n\'est pas disponible pour ces dates.');
-      }
-
       const reservation = await Reservation.create({
-        appartementId,
-        userId,
-        dateDebut,
-        dateFin,
-        prix,
+        appartement_id, 
+        client_id, 
+        date_debut,
+        date_fin,
       });
-
-      const token = this.generateToken(userId, 'user');
-
-      return { reservation, token };
+      return reservation;
     } catch (error) {
+      console.error('Erreur lors de la création d\'une réservation:', error);
       throw error;
     }
   }
 
-  static async checkAppartementAvailability(appartementId, dateDebut, dateFin) {
+  static async updateReservation(id, date_debut, date_fin) {
     try {
-      const existingReservations = await Reservation.findAll({
-        where: {
-          appartementId,
-          [Op.or]: [
-            {
-              dateDebut: { [Op.between]: [dateDebut, dateFin] },
-            },
-            {
-              dateFin: { [Op.between]: [dateDebut, dateFin] },
-            },
-          ],
-        },
-      });
+      const reservation = await Reservation.findByPk(id);
 
-      return existingReservations.length === 0;
+        await reservation.update({
+          date_debut,
+          date_fin,
+        });
+
+        return reservation;
+    
+      return null;
     } catch (error) {
-      throw new Error('Erreur lors de la vérification de la disponibilité de l\'appartement.');
+      console.error('Erreur lors de la mise à jour d\'une réservation:', error);
+      throw error;
     }
   }
 
-  static generateToken(userId, role) {
-    const token = 'ton_code_pour_generer_le_token';
-    return token;
-  }
-
-  static async updateReservation(reservationId, dateDebut, dateFin, prix) {
+  static async deleteReservation(id) {
     try {
-      const reservation = await Reservation.findByPk(reservationId);
+      const reservation = await Reservation.findByPk(id);
       if (reservation) {
-        await Reservation.update({
-          dateDebut,
-          dateFin,
-          prix,
-        }, {
-          where: {
-            id: reservationId,
-          },
-        });
+        await reservation.destroy();
         return reservation;
       }
       return null;
     } catch (error) {
+      console.error('Erreur lors de la suppression d\'une réservation:', error);
       throw error;
     }
   }
-
-  static async deleteReservation(reservationId) {
-    try {
-      const reservation = await Reservation.findByPk(reservationId);
-      if (reservation) {
-        await Reservation.destroy({
-          where: {
-            id: reservationId,
-          },
-        });
-        return reservation;
-      }
-      return null;
-    } catch (error) {
-      throw error;
-    }
+  
   }
-}
 
 module.exports = ReservationService;
+
