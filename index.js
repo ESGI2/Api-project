@@ -25,6 +25,8 @@ const signinRoute = require("./backend/routes/signin.route");
 const loginRoute = require('./backend/routes/login.route');
 const appartementRoute = require("./backend/routes/appartement.route");
 const reservationRoute = require("./backend/routes/reservation.route");
+const meRoute = require("./backend/routes/me.route");
+app.use("/me", meRoute);
 app.use("/user", userRoute);
 app.use("/signin", signinRoute);
 app.use('/login', loginRoute);
