@@ -25,7 +25,7 @@ class AppartementService {
       }
     }
 
-  static async createAppartement(superficie, capacite, adresse, prix_nuit) {
+  static async createAppartement(superficie, capacite, adresse, prix_nuit, client_id) {
     const disponibilite = true;
     try {
       const appartement = await Appartement.create({
@@ -33,7 +33,8 @@ class AppartementService {
         capacite,
         adresse,
         disponibilite,
-        prix_nuit
+        prix_nuit,
+        client_id
       });
       return appartement;
     } catch (error) {

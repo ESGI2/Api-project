@@ -29,6 +29,10 @@ const Appartement = sequelize.define('Appartement', {
     type: DataTypes.DECIMAL(10, 2),
     allowNull: false,
   },
+  client_id: {
+    type: DataTypes.INTEGER,
+    allowNull: false,
+  },
 }, {
     timestamps: false, // Désactiver l'ajout automatique des colonnes createdAt et updatedAt
   });
