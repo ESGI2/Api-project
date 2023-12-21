@@ -59,6 +59,7 @@ class ReservationService {
 
   static async deleteReservation(id) {
     try {
+      
       const reservation = await Reservation.findByPk(id);
       if (reservation) {
         await reservation.destroy();
